@@ -7,7 +7,10 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.cui.activity.MyApplication;
 import com.cui.test.R;
+import com.cui.util.DBUtil;
+import com.tencent.android.mid.common.Util;
 import com.tencent.android.tpush.XGPushBaseReceiver;
 import com.tencent.android.tpush.XGPushClickedResult;
 import com.tencent.android.tpush.XGPushRegisterResult;
@@ -39,16 +42,12 @@ public class CustomPushReceiver extends XGPushBaseReceiver {
 	/**
 	 * 注册结果
 	 * 
-	 * @param context
-	 *            APP上下文对象
-	 * @param errorCode
-	 *            错误码，{@link XGPushBaseReceiver#SUCCESS}表示成功，其它表示失败
-	 * @param registerMessage
-	 *            注册结果返回
+	 * @param context APP上下文对象
+	 * @param errorCode 错误码，{@link XGPushBaseReceiver#SUCCESS}表示成功，其它表示失败
+	 * @param registerMessage 注册结果返回
 	 */
 	@Override
-	public void onRegisterResult(Context context, int errorCode,
-			XGPushRegisterResult registerMessage) {
+	public void onRegisterResult(Context context, int errorCode, XGPushRegisterResult registerMessage) {
 		String text = null;
 		if (errorCode == XGPushBaseReceiver.SUCCESS) {
 			text = registerMessage + "注册成功";
@@ -62,10 +61,8 @@ public class CustomPushReceiver extends XGPushBaseReceiver {
 	/**
 	 * 反注册结果
 	 * 
-	 * @param context
-	 *            APP上下文对象
-	 * @param errorCode
-	 *            错误码，{@link XGPushBaseReceiver#SUCCESS}表示成功，其它表示失败
+	 * @param context APP上下文对象
+	 * @param errorCode 错误码，{@link XGPushBaseReceiver#SUCCESS}表示成功，其它表示失败
 	 */
 	@Override
 	public void onUnregisterResult(Context context, int errorCode) {
@@ -82,10 +79,8 @@ public class CustomPushReceiver extends XGPushBaseReceiver {
 	/**
 	 * 设置标签操作结果
 	 * 
-	 * @param context
-	 *            APP上下文对象
-	 * @param errorCode
-	 *            错误码，{@link XGPushBaseReceiver#SUCCESS}表示成功，其它表示失败
+	 * @param context APP上下文对象
+	 * @param errorCode 错误码，{@link XGPushBaseReceiver#SUCCESS}表示成功，其它表示失败
 	 * @tagName 标签名称
 	 */
 	@Override
@@ -103,10 +98,8 @@ public class CustomPushReceiver extends XGPushBaseReceiver {
 	/**
 	 * 删除标签操作结果
 	 * 
-	 * @param context
-	 *            APP上下文对象
-	 * @param errorCode
-	 *            错误码，{@link XGPushBaseReceiver#SUCCESS}表示成功，其它表示失败
+	 * @param context APP上下文对象
+	 * @param errorCode 错误码，{@link XGPushBaseReceiver#SUCCESS}表示成功，其它表示失败
 	 * @tagName 标签名称
 	 */
 	@Override
@@ -124,20 +117,19 @@ public class CustomPushReceiver extends XGPushBaseReceiver {
 	/**
 	 * 收到消息<br>
 	 * 
-	 * @param context
-	 *            APP上下文对象
-	 * @param message
-	 *            收到的消息
+	 * @param context APP上下文对象
+	 * @param message 收到的消息
 	 */
 	@Override
 	public void onTextMessage(Context context, XGPushTextMessage message) {
 		String text = "收到消息:" + message.toString();
-		System.out.println(text);
+		System.out.println(text); 
 		// 获取自定义key-value
 		String customContent = message.getCustomContent();
+		JSONObject obj=null;
 		if (customContent != null && customContent.length() != 0) {
 			try {
-				JSONObject obj = new JSONObject(customContent);
+				obj = new JSONObject(customContent);
 				// key1为前台配置的key
 				if (!obj.isNull("key")) {
 					String value = obj.getString("key");
@@ -150,20 +142,26 @@ public class CustomPushReceiver extends XGPushBaseReceiver {
 		}
 		// APP自主处理消息的过程。。。
 		Log.d(LogTag, text);
-		show(context, text);
+		// show(context, text);
+		try {
+			DBUtil dbUtil = DBUtil.getInstance(context);
+			dbUtil.insert("insert into conversations (ID,fromid,toid,content,messagetime,messagetype,readed,status) values(?,?,?,?,?,?,?,?)",
+					new String[] {obj.getString("from"),obj.getString("from"),obj.getString("to"),message.getContent(),obj.getString("sendtime"),"1","2","0"});
+			MyApplication.playSound(MyApplication.soundid_s3);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	/**
 	 * 通知被打开结果反馈
 	 * 
-	 * @param context
-	 *            APP上下文对象
-	 * @param message
-	 *            被打开的消息对象
+	 * @param context APP上下文对象
+	 * @param message 被打开的消息对象
 	 */
 	@Override
-	public void onNotifactionClickedResult(Context context,
-			XGPushClickedResult message) {
+	public void onNotifactionClickedResult(Context context, XGPushClickedResult message) {
 		String text = "通知被打开 :" + message;
 		// 获取自定义key-value
 		String customContent = message.getCustomContent();

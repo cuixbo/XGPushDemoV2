@@ -150,11 +150,11 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				Log.d(Constants.LogTag, "$$$ register push");
 				XGPushConfig.enableDebug(MainActivity.this, true);
-				//XGPushManager.re
-				XGPushManager.registerPush(MainActivity.this, "cui",new XGIOperateCallback() {
+				// XGPushManager.re
+				XGPushManager.registerPush(MainActivity.this, "cui", new XGIOperateCallback() {
 					@Override
 					public void onSuccess(Object data, int flag) {
-						System.out.println("registerPush success-->"+data);
+						System.out.println("registerPush success-->" + data);
 						Log.w(Constants.LogTag, "+++ register push sucess. token:" + data);
 						m = handler.obtainMessage();
 						m.obj = "+++ register push sucess. token:" + data;
